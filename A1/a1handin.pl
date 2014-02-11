@@ -104,16 +104,26 @@ equality(X/Y, X/Y).
 hfnUniform(_,0).       % causes search algorithm to do uniform costs search.
 
 %% Implement the Manhattan Distance
-hfnManhattan(X/Y, Val).
+hfnManhattan(X/Y, Val) :- maze(_,_,_,_,_,A/B), Val is abs(X-A) + abs(Y-B).
 
 
 %% Implement the Rounded Euclidean Distance  (you may use sqrt and floor)
-hfnEuclid(X/Y, Val).
+hfnEuclid(X/Y, Val) :- maze(_,_,_,_,_,A/B), Val is floor(sqrt(((X-A) * (X-A)) + ((Y-B) * (Y-B)))).
 
 
 %% Implement your own heuristic function
-hfnMyHeuristic(_, 0).
+hfnMyHeuristic(X/Y, Val) :- hfnManhattan(X/Y, Val1), blockCount(X/Y, Val2), Val is Val1 + Val2.
 
+%% Helper functions to count obstacles in our block
+blockCount(X/Y, Val) :- maze(_,_,_,O,_,A/B), blockCountHelper(X/Y, A/B, O, Val). 
+
+blockCountHelper(X/Y, A/B, [OX/OY|T], Val) :- OX >= min(X,A), OX =< max(X,A), OY >= min(Y,B), OY =< max(Y,B),
+  					      blockCountHelper(X/Y, A/B, T, Val1), Val is Val1 + 1.
+blockCountHelper(X/Y, A/B, [OX/_|T], Val) :- OX > max(X,A), blockCountHelper(X/Y, A/B, T, Val).
+blockCountHelper(X/Y, A/B, [OX/_|T], Val) :- OX < min(X,A), blockCountHelper(X/Y, A/B, T, Val).
+blockCountHelper(X/Y, A/B, [_/OY|T], Val) :- OY > max(Y,B), blockCountHelper(X/Y, A/B, T, Val).
+blockCountHelper(X/Y, A/B, [_/OY|T], Val) :- OY < min(Y,B), blockCountHelper(X/Y, A/B, T, Val).
+blockCountHelper(_,_,[],0). 
 
 
 /*-------------------------------------------------------------------------
