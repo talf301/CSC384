@@ -59,25 +59,25 @@ successors(X/Y, N) :- rSucc(X/Y, E1), lSucc(X/Y, E2), uSucc(X/Y, E3), dSucc(X/Y,
 
 %% Helper functions for checking each direction
 rSucc(X/Y, [(1, Z/Y)]) :- Z is X + 1, 
-                        maze(MazeName,M,N,O,S,G), 
+                        maze(_,M,_,O,_,_), 
                         Z =< M, not(member(Z/Y, O)).
 
 rSucc(_/_, []).
 
 lSucc(X/Y, [(1, Z/Y)]) :- Z is X - 1,
-                        maze(MazeName,M,N,O,S,G),
+                        maze(_,_,_,O,_,_),
                         Z > 0, not(member(Z/Y, O)).
 
 lSucc(_/_, []).
 
 dSucc(X/Y, [(1, X/Z)]) :- Z is Y + 1,
-                        maze(MazeName,M,N,O,S,G),
+                        maze(_,_,N,O,_,_),
                         Z =< N, not(member(X/Z, O)).
 
 dSucc(_/_, []).
 
 uSucc(X/Y, [(1, X/Z)]) :- Z is Y - 1,
-                        maze(MazeName,M,N,O,S,G),
+                        maze(_,_,_,O,_,_),
                         Z > 0, not(member(X/Z, O)).
 
 uSucc(_/_, []).
