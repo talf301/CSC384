@@ -62,25 +62,25 @@ rSucc(X/Y, [(1, Z/Y)]) :- Z is X + 1,
                         maze(_,M,_,O,_,_), 
                         Z =< M, not(member(Z/Y, O)).
 
-rSucc(_/_, []).
+rSucc(_, []).
 
 lSucc(X/Y, [(1, Z/Y)]) :- Z is X - 1,
                         maze(_,_,_,O,_,_),
                         Z > 0, not(member(Z/Y, O)).
 
-lSucc(_/_, []).
+lSucc(_, []).
 
 dSucc(X/Y, [(1, X/Z)]) :- Z is Y + 1,
                         maze(_,_,N,O,_,_),
                         Z =< N, not(member(X/Z, O)).
 
-dSucc(_/_, []).
+dSucc(_, []).
 
 uSucc(X/Y, [(1, X/Z)]) :- Z is Y - 1,
                         maze(_,_,_,O,_,_),
                         Z > 0, not(member(X/Z, O)).
 
-uSucc(_/_, []).
+uSucc(_, []).
 
 
 
