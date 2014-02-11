@@ -54,25 +54,33 @@ mazesDatabase([
 %%     Cost is the cost (here simply 1) for that corresponding move.
 %% ------------------------------------------------------------------------------------------------------------
 
-successors(X/Y, N) :- rSucc(X/Y, E1), lSucc(X/Y, E2), uSucc(X/Y, E3), dSucc(X/Y, E4),
+successors(X/Y, N) :- rSucc(X/Y, E1), lSucc(X/Y, E2), uSucc(X/Y, E3), dSucc(X/Y, E4), !, 
                       append(E1, E2, N1), append(N1, E3, N2), append(N2, E4, N).
 
 %% Helper functions for checking each direction
-rSucc(X/Y, [(1, X/Z)]) :- Z is X + 1, 
+rSucc(X/Y, [(1, Z/Y)]) :- Z is X + 1, 
                         maze(MazeName,M,N,O,S,G), 
-                        Z <= M, not(member(X/Z, O)), !.
+                        Z =< M, not(member(Z/Y, O)).
 
-lSucc(X/Y, [(1, X/Z)]) :- Z is X - 1,
-                        maze(MazeName,M,N,O,S,G),
-                        Z > 0, not(member(X/Z, O)), !.
+rSucc(_/_, []).
 
-uSucc(X/Y, [(1, X/Z)]) :- Z is Y + 1,
+lSucc(X/Y, [(1, Z/Y)]) :- Z is X - 1,
                         maze(MazeName,M,N,O,S,G),
-                        Z <= N, not(member(X/Z, O)), !.
+                        Z > 0, not(member(Z/Y, O)).
 
-dSucc(X/Y, [(1, X/Z)]) :- Z is Y - 1,
+lSucc(_/_, []).
+
+dSucc(X/Y, [(1, X/Z)]) :- Z is Y + 1,
                         maze(MazeName,M,N,O,S,G),
-                        Z > 0, not(member(X/Z), O)), !.
+                        Z =< N, not(member(X/Z, O)).
+
+dSucc(_/_, []).
+
+uSucc(X/Y, [(1, X/Z)]) :- Z is Y - 1,
+                        maze(MazeName,M,N,O,S,G),
+                        Z > 0, not(member(X/Z, O)).
+
+uSucc(_/_, []).
 
 
 
@@ -96,15 +104,15 @@ equality(X/Y, X/Y).
 hfnUniform(_,0).       % causes search algorithm to do uniform costs search.
 
 %% Implement the Manhattan Distance
-hfnManhattan(X/Y, Val) :- 
+hfnManhattan(X/Y, Val).
 
 
 %% Implement the Rounded Euclidean Distance  (you may use sqrt and floor)
-hfnEuclid(X/Y, Val) :- 
+hfnEuclid(X/Y, Val).
 
 
 %% Implement your own heuristic function
-hfnMyHeuristic(_, 0) :-
+hfnMyHeuristic(_, 0).
 
 
 
