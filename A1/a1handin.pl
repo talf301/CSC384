@@ -54,7 +54,25 @@ mazesDatabase([
 %%     Cost is the cost (here simply 1) for that corresponding move.
 %% ------------------------------------------------------------------------------------------------------------
 
-successors(X/Y, )
+successors(X/Y, N) :- rSucc(X/Y, E1), lSucc(X/Y, E2), uSucc(X/Y, E3), dSucc(X/Y, E4),
+                      append(E1, E2, N1), append(N1, E3, N2), append(N2, E4, N).
+
+%% Helper functions for checking each direction
+rSucc(X/Y, [(1, X/Z)]) :- Z is X + 1, 
+                        maze(MazeName,M,N,O,S,G), 
+                        Z <= M, not(member(X/Z, O)), !.
+
+lSucc(X/Y, [(1, X/Z)]) :- Z is X - 1,
+                        maze(MazeName,M,N,O,S,G),
+                        Z > 0, not(member(X/Z, O)), !.
+
+uSucc(X/Y, [(1, X/Z)]) :- Z is Y + 1,
+                        maze(MazeName,M,N,O,S,G),
+                        Z <= N, not(member(X/Z, O)), !.
+
+dSucc(X/Y, [(1, X/Z)]) :- Z is Y - 1,
+                        maze(MazeName,M,N,O,S,G),
+                        Z > 0, not(member(X/Z), O)), !.
 
 
 
@@ -92,7 +110,7 @@ hfnMyHeuristic(_, 0) :-
 
 /*-------------------------------------------------------------------------
   Below are helper to run your code and see the results.
-  Do not change these!
+  Do not change these!S
 --------------------------------------------------------------------*/
 
 
