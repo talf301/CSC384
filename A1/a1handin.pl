@@ -118,11 +118,8 @@ hfnMyHeuristic(X/Y, Val) :- hfnManhattan(X/Y, Val1), blockCount(X/Y, Val2), Val 
 blockCount(X/Y, Val) :- maze(_,_,_,O,_,A/B), blockCountHelper(X/Y, A/B, O, Val). 
 
 blockCountHelper(X/Y, A/B, [OX/OY|T], Val) :- OX >= min(X,A), OX =< max(X,A), OY >= min(Y,B), OY =< max(Y,B),
-  					      blockCountHelper(X/Y, A/B, T, Val1), Val is Val1 + 1.
-blockCountHelper(X/Y, A/B, [OX/_|T], Val) :- OX > max(X,A), blockCountHelper(X/Y, A/B, T, Val).
-blockCountHelper(X/Y, A/B, [OX/_|T], Val) :- OX < min(X,A), blockCountHelper(X/Y, A/B, T, Val).
-blockCountHelper(X/Y, A/B, [_/OY|T], Val) :- OY > max(Y,B), blockCountHelper(X/Y, A/B, T, Val).
-blockCountHelper(X/Y, A/B, [_/OY|T], Val) :- OY < min(Y,B), blockCountHelper(X/Y, A/B, T, Val).
+  					      blockCountHelper(X/Y, A/B, T, Val1), !, Val is Val1 + 1.
+blockCountHelper(X/Y, A/B, [_|T], Val) :- blockCountHelper(X/Y, A/B, T, Val).
 blockCountHelper(_,_,[],0). 
 
 
