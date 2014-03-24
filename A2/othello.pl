@@ -136,7 +136,7 @@ moves(Plyr,State,MvList) :- moveshelp(Plyr,State,[],MvList,35).
 %  helper to recursively find all moves
 moveshelp(_,_,MvList,MvList,-1).
 moveshelp(Plyr,State,SoFar,MvList,Mv) :- Mv > -1, X is Mv // 6, Y is Mv mod 6, Nm is Mv - 1,
-										 validmove(Plyr, State, [X,Y]), !,
+										 get(State,[X,Y],.), validAnyDir(Plyr,State,[X,Y]), !,
 										 moveshelp(Plyr,State,[[X,Y]|SoFar],MvList,Nm).
 moveshelp(Plyr,State,SoFar,MvList,Mv) :- Mv > -1, Nm is Mv - 1, 
 										 moveshelp(Plyr,State,SoFar,MvList,Nm).
@@ -179,7 +179,7 @@ rflip(Plyr,[R,C],State,State,_,_) :- get(State,[R,C],Plyr).
 %% define validmove(Plyr,State,Proposed). 
 %   - true if Proposed move by Plyr is valid at State.
 %  two cases: either a pass or a move, check this seperately
-validmove(Plyr,State,[R,C]) :- get(State, [R,C], .), validAnyDir(Plyr, State, [R,C]).
+validmove(Plyr,State,Proposed):- moves(Plyr,State,L), member(Proposed,L). 
 validmove(Plyr,State,n) :- moves(Plyr,State,[]).
  
 
@@ -192,10 +192,15 @@ validmove(Plyr,State,n) :- moves(Plyr,State,[]).
 %   NOTE2. If State is not terminal h should be an estimate of
 %          the value of state (see handout on ideas about
 %          good heuristics.
-h(State,0) :- \+ terminal(State).
-h(State,0) :- tie(State).
-h(State,100) :- winner(State,2).
-h(State,-100) :- winner(State,1).
+
+h(State,Val) :- terminal(State),count(1,State,C1),count(2,State,C2),
+		Val is C2 - C1. 
+
+%%uninformed heuristic%%
+%h(State,0) :- \+ terminal(State).
+%h(State,0) :- tie(State).
+%h(State,100) :- winner(State,2).
+%h(State,-100) :- winner(State,1).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%lowerBound(B)%%%%%%%%%%%%%%%%%%%%%%%%%
