@@ -1,9 +1,9 @@
 /* ----------------------------------------------------------
     CSC384 Assignment 2 
 
-% Surname:
-% First Name:
-% Student Number: 
+% Surname: Friedman
+% First Namer: Tal
+% Student Number: 999875899
 
   ------------------------------------------------------ */
 
@@ -58,12 +58,19 @@ initBoard([ [.,.,.,.,.,.],
 	    [.,.,2,1,.,.], 
             [.,.,.,.,.,.], 
 	    [.,.,.,.,.,.] ]).
- 
+
+testBoard([ [1,1,1,1,1,1],
+[1,1,1,1,1,1],
+[1,1,1,1,1,1],
+[1,1,1,1,1,1],
+[1,1,1,1,1,1],
+[1,1,1,1,1,1]]).
+
 %%%%%%%%%%%%%%%%%% IMPLEMENT: initialize(...)%%%%%%%%%%%%%%%%%%%%%
 %%% Using initBoard define initialize(InitialState,InitialPlyr). 
 %%%  holds iff InitialState is the initial state and 
 %%%  InitialPlyr is the player who moves first. 
-
+initialize(InitialState,1) :- initBoard(InitialState).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%winner(...)%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -71,7 +78,9 @@ initBoard([ [.,.,.,.,.,.],
 %% define winner(State,Plyr) here.  
 %     - returns winning player if State is a terminal position and
 %     Plyr has a higher score than the other player 
-
+winner(State,Plyr) :- terminal(State), otherPlyr(Plyr,Plyr2),
+					  count(Plyr,State,C1), count(Plyr2,State,C2),
+					  C1 > C2.
 
 
 
@@ -80,7 +89,8 @@ initBoard([ [.,.,.,.,.,.],
 %%
 %% define tie(State) here. 
 %    - true if terminal State is a "tie" (no winner) 
-
+tie(State) :- terminal(State), count(1,State,C1), count(2,State,C2),
+			  C1 =:= C2.
 
 
 
@@ -89,7 +99,7 @@ initBoard([ [.,.,.,.,.,.],
 %%
 %% define terminal(State). 
 %   - true if State is a terminal   
-
+terminal(State) :- moves(1,State,[]), moves(2,State,[]).
 
 
 
@@ -118,10 +128,16 @@ printList([H | L]) :-
 %% define moves(Plyr,State,MvList). 
 %   - returns list MvList of all legal moves Plyr can make in State
 %
+moves(Plyr,State,MvList) :- moveshelp(Plyr,State,[],MvList,35).
 
-
-
-
+%% moveshelp(Plyr,State, SoFar, MvList, Mv).
+%  helper to recursively find all moves
+moveshelp(_,_,MvList,MvList,-1).
+moveshelp(Plyr,State,SoFar,MvList,Mv) :- Mv > -1, X is Mv // 6, Y is Mv mod 6, Nm is Mv - 1,
+										 validmove(Plyr, State, [X,Y]), !,
+										 moveshelp(Plyr,State,[[X,Y]|SoFar],MvList,Nm).
+moveshelp(Plyr,State,SoFar,MvList,Mv) :- Mv > -1, Nm is Mv - 1, 
+										 moveshelp(Plyr,State,SoFar,MvList,Nm).
 
 %%%%%%%%%%%%%%nextState(Plyr,Move,State,NewState,NextPlyr)%%%%%%%%%%%%%%%%%%%%
 %% 
@@ -129,18 +145,39 @@ printList([H | L]) :-
 %   - given that Plyr makes Move in State, it determines NewState (i.e. the next 
 %     state) and NextPlayer (i.e. the next player who will move).
 %
+nextState(Plyr,[R,C],State,NewState,NextPlyr) :- validmove(Plyr,State,[R,C],
+												otherPlyr(Plyr,NextPlyr),
+												flip(Plyr,[R,C],State,St1,-1,-1),
+												flip(Plyr,[R,C],St1,St2,0,-1),
+												flip(Plyr,[R,C],St2,St3,1,-1),
+												flip(Plyr,[R,C],St3,St4,-1,0),
+												flip(Plyr,[R,C],St4,St5,1,0),
+												flip(Plyr,[R,C],St5,St6,-1,1),
+												flip(Plyr,[R,C],St6,St7,0,1),
+												flip(Plyr,[R,C],St7,St8,1,1),
+												set(St8,NewState,[R,C],Plyr).
+												
+%% flip(Plyr,[R,C],State,NewState,Ri,Ci) 
+%  checks if given direction is valid and if so preforms the necessary flips
+%  in direction
+flip(Plyr,[R,C],State,NewState,Ri,Ci) :- valid1Dir(Plyr, State, [R,C], Ri, Ci), !,
+										 Rn is R + Ri, Cn is C + Ci, 
+										 rflip(Plyr,[Rn,Cn],State,NewState,Ri,Ci).
+flip(_,_,State,State,_,_).	 
 
+rflip(Plyr,[R,C],State,NewState,Ri,Ci) :- otherPlyr(Plyr,Plyr2), get(State,[R,C],Plyr2),
+										  set(State,IntState,[R,C],Plyr),Rn is R + Ri,
+										  Cn is C + Ci, rflip(Plyr,[Rn,Cn],IntState,NewState,Ri,Ci).
 
-
-
+rflip(Plyr,[R,C],State,State,_,_) :- get(State,[R,C],Plyr).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%validmove(Plyr,State,Proposed)%%%%%%%%%%%%%%%%%%%%
 %% 
 %% define validmove(Plyr,State,Proposed). 
 %   - true if Proposed move by Plyr is valid at State.
-
-
-
-
+%  two cases: either a pass or a move, check this seperately
+validmove(Plyr,State,[R,C]) :- get(State, [R,C], '.'), validAnyDir(Plyr, State, [R,C]).
+validmove(Plyr,State,'n') :- moves(Plyr,State,[]).
+ 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%h(State,Val)%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 
@@ -151,8 +188,10 @@ printList([H | L]) :-
 %   NOTE2. If State is not terminal h should be an estimate of
 %          the value of state (see handout on ideas about
 %          good heuristics.
-
-
+h(State,0) :- \+ terminal(State).
+h(State,0) :- tie(State).
+h(State,100) :- winner(State,2).
+h(State,-100) :- winner(State,1).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%lowerBound(B)%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -160,16 +199,62 @@ printList([H | L]) :-
 %% define lowerBound(B).  
 %   - returns a value B that is less than the actual or heuristic value
 %     of all states.
-
+lowerBound(-101).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%upperBound(B)%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 
 %% define upperBound(B). 
 %   - returns a value B that is greater than the actual or heuristic value
 %     of all states.
+upperBound(101).
+
+%%%%%%% Global Helpers
+%% onBoard(R,C) specifies if a tile at [R,C] is on the board
+onBoard(R,C) :- R < 6, R >= 0, C < 6, C >= 0.
+
+%% otherPlyr(+Plyr, -Plyr2) returns the other player's number, i.e. 1 -> 2, 2 -> 1
+otherPlyr(Plyr, Plyr2) :- Plyr2 is (Plyr mod 2) + 1.
 
 
+%% validAnyDir(Plyr, State, [R,C]_
+%  true if a move at [R,C] is valid for Plyr based on any direction
+%  our strategy is to check each direction individually using a helper method
+validAnyDir(Plyr, State, [R,C]) :- valid1Dir(Plyr, State, [R,C], -1, -1).
+validAnyDir(Plyr, State, [R,C]) :- valid1Dir(Plyr, State, [R,C], 0, -1).
+validAnyDir(Plyr, State, [R,C]) :- valid1Dir(Plyr, State, [R,C], 1, -1).
+validAnyDir(Plyr, State, [R,C]) :- valid1Dir(Plyr, State, [R,C], -1, 0).
+validAnyDir(Plyr, State, [R,C]) :- valid1Dir(Plyr, State, [R,C], 1, 0).
+validAnyDir(Plyr, State, [R,C]) :- valid1Dir(Plyr, State, [R,C], -1, 1).
+validAnyDir(Plyr, State, [R,C]) :- valid1Dir(Plyr, State, [R,C], 0, 1).
+validAnyDir(Plyr, State, [R,C]) :- valid1Dir(Plyr, State, [R,C], 1, 1).
 
+%% valid1Dir(Plyr, State, [R,C], Ri, Ci) 
+%  true if a move at [R,C] is valid for Plyr based only one if it will bracket 
+%  enemy pieces in the direction given by Ri, Ci
+%  STRATEGY: check if the next spot is of the opposite
+%  colour, and finally run a "find" for a spot of the original colour
+valid1Dir(Plyr, State, [R,C], Ri, Ci) :- otherPlyr(Plyr, Plyr2),
+									  	 Rn1 is R + Ri,  Cn1 is C + Ci, onBoard(Rn1, Cn1),
+										 get(State, [Rn1, Cn1], Plyr2), Rn2 is Rn1 + Ri,
+										 Cn2 is Cn1 + Ci, find(Plyr, State, [Rn2,Cn2], Ri, Ci).
+%% find(Plyr, State, [R,C], Ri, Ci) find if there is a square of the given player going
+%  from (and including) [R,C] in the direction given by Ri and Ci in the given State,
+%  spaces in the middle are allowed to be of the opposite player but not empty
+find(Plyr, State, [R,C],_,_) :- onBoard(R,C), get(State, [R,C], Plyr).
+find(Plyr, State, [R,C], Ri, Ci) :- otherPlyr(Plyr, Plyr2), get(State, [R,C], Plyr2),
+									Rn is R + Ri, Cn is C + Ci, onBoard(Rn,Cn), 
+									find(Plyr, State, [Rn,Cn], Ri, Ci). 
+
+%% count(Plyr, State, Count) counts the amount of tiles belonging to Plyr
+count(Plyr, State, Count) :- countHelp(Plyr, State, 35, Count),!.
+
+
+countHelp(_,_, -1, 0).
+countHelp(Plyr, State, Mv, Count) :- X is Mv // 6, Y is Mv mod 6, 
+									 get(State, [X,Y], Plyr), !,
+									 Nm is Mv - 1, countHelp(Plyr, State, Nm, C1),
+									 Count is C1 + 1.
+countHelp(Plyr, State, Mv, Count) :- Nm is Mv - 1, countHelp(Plyr,State,Nm,Count). 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                       %
 %                                                                       %
