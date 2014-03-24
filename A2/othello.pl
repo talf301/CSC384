@@ -59,12 +59,12 @@ initBoard([ [.,.,.,.,.,.],
             [.,.,.,.,.,.], 
 	    [.,.,.,.,.,.] ]).
 
-testBoard([ [1,1,1,1,1,1],
+testBoard([ [2,2,2,2,2,1],
 [1,1,1,1,1,1],
-[1,1,1,1,1,1],
-[1,1,1,1,1,1],
-[1,1,1,1,1,1],
-[1,1,1,1,1,1]]).
+[1,1,1,2,2,1],
+[.,1,2,2,2,1],
+[.,1,1,1,1,1],
+[.,.,.,.,.,.]]).
 
 %%%%%%%%%%%%%%%%%% IMPLEMENT: initialize(...)%%%%%%%%%%%%%%%%%%%%%
 %%% Using initBoard define initialize(InitialState,InitialPlyr). 
@@ -78,9 +78,11 @@ initialize(InitialState,1) :- initBoard(InitialState).
 %% define winner(State,Plyr) here.  
 %     - returns winning player if State is a terminal position and
 %     Plyr has a higher score than the other player 
-winner(State,Plyr) :- terminal(State), otherPlyr(Plyr,Plyr2),
-					  count(Plyr,State,C1), count(Plyr2,State,C2),
-					  C1 > C2.
+winner(State,1) :- terminal(State),	count(1,State,C1), 
+				   count(2,State,C2), C1 > C2.
+
+winner(State,2) :- terminal(State), count(1,State,C1),
+				   count(2,State,C2), C2 > C1.
 
 
 
@@ -145,7 +147,7 @@ moveshelp(Plyr,State,SoFar,MvList,Mv) :- Mv > -1, Nm is Mv - 1,
 %   - given that Plyr makes Move in State, it determines NewState (i.e. the next 
 %     state) and NextPlayer (i.e. the next player who will move).
 %
-nextState(Plyr,[R,C],State,NewState,NextPlyr) :- validmove(Plyr,State,[R,C],
+nextState(Plyr,[R,C],State,NewState,NextPlyr) :- validmove(Plyr,State,[R,C]),
 												otherPlyr(Plyr,NextPlyr),
 												flip(Plyr,[R,C],State,St1,-1,-1),
 												flip(Plyr,[R,C],St1,St2,0,-1),
@@ -156,6 +158,8 @@ nextState(Plyr,[R,C],State,NewState,NextPlyr) :- validmove(Plyr,State,[R,C],
 												flip(Plyr,[R,C],St6,St7,0,1),
 												flip(Plyr,[R,C],St7,St8,1,1),
 												set(St8,NewState,[R,C],Plyr).
+
+nextState(Plyr,n,State,State,NextPlyr) :- otherPlyr(Plyr,NextPlyr).
 												
 %% flip(Plyr,[R,C],State,NewState,Ri,Ci) 
 %  checks if given direction is valid and if so preforms the necessary flips
@@ -175,8 +179,8 @@ rflip(Plyr,[R,C],State,State,_,_) :- get(State,[R,C],Plyr).
 %% define validmove(Plyr,State,Proposed). 
 %   - true if Proposed move by Plyr is valid at State.
 %  two cases: either a pass or a move, check this seperately
-validmove(Plyr,State,[R,C]) :- get(State, [R,C], '.'), validAnyDir(Plyr, State, [R,C]).
-validmove(Plyr,State,'n') :- moves(Plyr,State,[]).
+validmove(Plyr,State,[R,C]) :- get(State, [R,C], .), validAnyDir(Plyr, State, [R,C]).
+validmove(Plyr,State,n) :- moves(Plyr,State,[]).
  
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%h(State,Val)%%%%%%%%%%%%%%%%%%%%%%%%%
