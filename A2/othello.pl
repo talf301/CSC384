@@ -59,12 +59,6 @@ initBoard([ [.,.,.,.,.,.],
             [.,.,.,.,.,.], 
 	    [.,.,.,.,.,.] ]).
 
-testBoard([ [2,2,2,2,2,1],
-[1,1,1,1,1,1],
-[1,1,1,2,2,1],
-[.,1,2,2,2,1],
-[.,1,1,1,1,1],
-[.,.,.,.,.,.]]).
 
 %%%%%%%%%%%%%%%%%% IMPLEMENT: initialize(...)%%%%%%%%%%%%%%%%%%%%%
 %%% Using initBoard define initialize(InitialState,InitialPlyr). 
@@ -167,7 +161,10 @@ nextState(Plyr,n,State,State,NextPlyr) :- otherPlyr(Plyr,NextPlyr).
 flip(Plyr,[R,C],State,NewState,Ri,Ci) :- valid1Dir(Plyr, State, [R,C], Ri, Ci), !,
 										 Rn is R + Ri, Cn is C + Ci, 
 										 rflip(Plyr,[Rn,Cn],State,NewState,Ri,Ci).
-flip(_,_,State,State,_,_).	 
+flip(_,_,State,State,_,_).
+
+%% rflip(Plyr,[R,C],State,NewState,Ri,Ci)
+%  recursively go in the direction and flip necessary tiles	 
 
 rflip(Plyr,[R,C],State,NewState,Ri,Ci) :- otherPlyr(Plyr,Plyr2), get(State,[R,C],Plyr2),
 										  set(State,IntState,[R,C],Plyr),Rn is R + Ri,
@@ -193,14 +190,11 @@ validmove(Plyr,State,n) :- moves(Plyr,State,[]).
 %          the value of state (see handout on ideas about
 %          good heuristics.
 
-h(State,Val) :- terminal(State),count(1,State,C1),count(2,State,C2),
-		Val is C2 - C1. 
 
-%%uninformed heuristic%%
-%h(State,0) :- \+ terminal(State).
-%h(State,0) :- tie(State).
-%h(State,100) :- winner(State,2).
-%h(State,-100) :- winner(State,1).
+h(State,0) :- \+ terminal(State).
+h(State,0) :- tie(State).
+h(State,100) :- winner(State,2).
+h(State,-100) :- winner(State,1).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%lowerBound(B)%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -221,7 +215,7 @@ upperBound(101).
 %% onBoard(R,C) specifies if a tile at [R,C] is on the board
 onBoard(R,C) :- R < 6, R >= 0, C < 6, C >= 0.
 
-%% otherPlyr(+Plyr, -Plyr2) returns the other player's number, i.e. 1 -> 2, 2 -> 1
+%% otherPlyr(Plyr, Plyr2) returns the other player's number, i.e. 1 -> 2, 2 -> 1
 otherPlyr(Plyr, Plyr2) :- Plyr2 is (Plyr mod 2) + 1.
 
 
@@ -258,12 +252,15 @@ find(Plyr, State, [R,C], Ri, Ci) :- otherPlyr(Plyr, Plyr2), get(State, [R,C], Pl
 count(Plyr, State, Count) :- countHelp(Plyr, State, 35, Count),!.
 
 
+%% countHelp(Plyr,State,Mv,Count) recursively goes through all squares
 countHelp(_,_, -1, 0).
 countHelp(Plyr, State, Mv, Count) :- X is Mv // 6, Y is Mv mod 6, 
 									 get(State, [X,Y], Plyr), !,
 									 Nm is Mv - 1, countHelp(Plyr, State, Nm, C1),
 									 Count is C1 + 1.
-countHelp(Plyr, State, Mv, Count) :- Nm is Mv - 1, countHelp(Plyr,State,Nm,Count). 
+countHelp(Plyr, State, Mv, Count) :- Nm is Mv - 1, countHelp(Plyr,State,Nm,Count).
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                       %
 %                                                                       %
